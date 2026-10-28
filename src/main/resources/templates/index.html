@@ -1,0 +1,433 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ATS Resume Intelligence - Free-First Truthful Resume Optimization</title>
+  <link rel="stylesheet" th:href="@{/css/style.css}">
+</head>
+<body>
+
+  <!-- Top Navigation Header -->
+  <header>
+    <div class="header-container">
+      <div class="logo-area">
+        <span class="logo-badge">ATS</span>
+        <div>
+          <div class="logo-title">ATS Resume Intelligence</div>
+          <div class="logo-subtitle">Free-first, Truthful, ATS-Friendly Tailoring System</div>
+        </div>
+      </div>
+
+      <div class="header-actions">
+        <div class="status-pill" id="ollamaStatusPill" title="Checks if local Ollama LLM is running on port 11434">
+          <span class="status-dot offline" id="ollamaDot"></span>
+          <span id="ollamaText">Deterministic Engine Active</span>
+        </div>
+        <button class="btn btn-secondary btn-sm" id="btnResetAll" title="Clear all local resume records and restart session">Clear / Reset</button>
+      </div>
+    </div>
+  </header>
+
+  <main>
+    <!-- Notification Alerts Area -->
+    <div id="alertContainer"></div>
+
+    <!-- Stepper Navigation -->
+    <nav class="stepper-nav">
+      <div class="step-item active" id="stepNav1">
+        <span class="step-num">1</span>
+        <span>Upload Master Resume</span>
+      </div>
+      <div class="step-item" id="stepNav2">
+        <span class="step-num">2</span>
+        <span>Verify Master Profile</span>
+      </div>
+      <div class="step-item" id="stepNav3">
+        <span class="step-num">3</span>
+        <span>Target Job Description</span>
+      </div>
+      <div class="step-item" id="stepNav4">
+        <span class="step-num">4</span>
+        <span>Review Tailored Resume</span>
+      </div>
+      <div class="step-item" id="stepNav5">
+        <span class="step-num">5</span>
+        <span>ATS Match &amp; Download</span>
+      </div>
+    </nav>
+
+    <!-- ======================================================================
+         STEP 1: UPLOAD MASTER RESUME
+         ====================================================================== -->
+    <section id="sectionStep1" class="card">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Upload Your Master Resume</h2>
+          <p class="card-subtitle">Upload your complete original resume once. It serves as your permanent, unshakeable source of truth.</p>
+        </div>
+        <div class="fact-guardrail-badge">
+          <span>🛡</span> Strict Fact Preservation: 0 Invented Claims
+        </div>
+      </div>
+
+      <div class="upload-dropzone" id="uploadDropzone">
+        <div class="upload-icon">📄</div>
+        <div class="upload-text">Drag &amp; drop your resume file here, or click to browse</div>
+        <div class="upload-hint">Supported formats: PDF, DOCX, or TXT (Max size 5 MB)</div>
+        <input type="file" id="resumeFileInput" accept=".pdf,.docx,.txt" style="display: none;" />
+      </div>
+
+      <div class="sample-button-bar">
+        <span style="color: var(--text-muted); font-size: 0.9rem;">or try immediately with fictional data:</span>
+        <button class="btn btn-secondary btn-sm" id="btnLoadSample">⚡ Load Fictional Sample Resume (Alex Mercer)</button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         STEP 2: VERIFY EXTRACTED MASTER PROFILE
+         ====================================================================== -->
+    <section id="sectionStep2" class="card" style="display: none;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Review &amp; Verify Master Profile</h2>
+          <p class="card-subtitle">Review the extracted details below. Correct any parsing discrepancies. Once confirmed, these facts are locked.</p>
+        </div>
+        <button class="btn btn-primary" id="btnSaveProfile">✔ Confirm &amp; Save Verified Profile</button>
+      </div>
+
+      <!-- Personal Info -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Full Name</label>
+          <input type="text" class="form-input" id="profFullName" placeholder="Candidate Name">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Professional Headline / Subtitle</label>
+          <input type="text" class="form-input" id="profHeadline" placeholder="e.g. Software Developer | Full Stack Developer (React · Node.js · PostgreSQL)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Email Address</label>
+          <input type="email" class="form-input" id="profEmail" placeholder="candidate@example.com">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Phone Number</label>
+          <input type="text" class="form-input" id="profPhone" placeholder="+1 (555) 000-0000">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Location (City, State, Country)</label>
+          <input type="text" class="form-input" id="profLocation" placeholder="Pune, Maharashtra, India">
+        </div>
+      </div>
+
+      <!-- Links -->
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">LinkedIn Profile URL</label>
+          <input type="text" class="form-input" id="profLinkedin" placeholder="https://linkedin.com/in/username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">GitHub URL</label>
+          <input type="text" class="form-input" id="profGithub" placeholder="https://github.com/username">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Portfolio / Website</label>
+          <input type="text" class="form-input" id="profPortfolio" placeholder="https://yourportfolio.dev">
+        </div>
+      </div>
+
+      <!-- Summary -->
+      <div class="form-group">
+        <label class="form-label">Professional Summary</label>
+        <textarea class="form-textarea" id="profSummary" rows="3" placeholder="Summary of your career and key technical competencies"></textarea>
+      </div>
+
+      <!-- Skills -->
+      <div class="form-group">
+        <label class="form-label">Technical Skills &amp; Competencies</label>
+        <div style="display:flex; gap:0.5rem; margin-bottom: 0.5rem;">
+          <input type="text" class="form-input" id="newSkillInput" placeholder="Type a skill and press Enter to add..." style="max-width: 400px;">
+        </div>
+        <div class="tag-list" id="skillsTagContainer"></div>
+      </div>
+
+      <!-- Work Experience -->
+      <div class="form-group">
+        <label class="form-label" style="font-size: 1rem; margin-top: 1rem;">Work Experience &amp; Measurable Achievements</label>
+        <div id="experienceListContainer"></div>
+      </div>
+
+      <!-- Education & Projects -->
+      <div class="form-row">
+        <div>
+          <label class="form-label">Education History</label>
+          <div id="educationListContainer"></div>
+        </div>
+        <div>
+          <label class="form-label">Projects</label>
+          <div id="projectsListContainer"></div>
+        </div>
+      </div>
+
+      <!-- Certifications -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">Certifications &amp; Licenses</label>
+        <div class="tag-list" id="certificationsListContainer"></div>
+      </div>
+
+      <!-- Achievements -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <label class="form-label" style="margin-bottom:0;">Key Achievements (Hackathons, Open-Source, Recognition)</label>
+          <button class="btn btn-secondary btn-sm" onclick="addAchievementEntry()">+ Add Achievement</button>
+        </div>
+        <div id="achievementsListContainer"></div>
+      </div>
+
+      <!-- Additional Activities & Leadership -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.4rem;">
+          <label class="form-label" style="margin-bottom:0;">Additional Activities &amp; Leadership (Competitive Programming, Event Organizing)</label>
+          <button class="btn btn-secondary btn-sm" onclick="addActivityEntry()">+ Add Activity</button>
+        </div>
+        <div id="activitiesListContainer"></div>
+      </div>
+
+      <!-- Soft Skills -->
+      <div class="form-group" style="margin-top: 1rem;">
+        <label class="form-label">Soft Skills (e.g. Leadership, Team Collaboration, Communication)</label>
+        <div style="display:flex; gap:0.5rem; margin-bottom: 0.5rem;">
+          <input type="text" class="form-input" id="newSoftSkillInput" placeholder="Add soft skill (e.g. Problem Solving) and press Enter..." style="max-width: 400px;">
+        </div>
+        <div class="tag-list" id="softSkillsTagContainer"></div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         STEP 3: TARGET JOB DESCRIPTION
+         ====================================================================== -->
+    <section id="sectionStep3" class="card" style="display: none;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Target Job Description &amp; Options</h2>
+          <p class="card-subtitle">Paste the full job posting below. The engine will extract required skills, preferred qualifications, and terminology.</p>
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Complete Job Description Text *</label>
+        <textarea class="form-textarea" id="jdRawText" rows="10" placeholder="Paste the complete job description here, including responsibilities, technical requirements, and preferred qualifications..."></textarea>
+      </div>
+
+      <div class="form-row">
+        <div class="form-group">
+          <label class="form-label">Target Role (Optional)</label>
+          <input type="text" class="form-input" id="jdTargetRole" placeholder="e.g. Senior Java Software Engineer (auto-detected if blank)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Company (Optional)</label>
+          <input type="text" class="form-input" id="jdTargetCompany" placeholder="e.g. Acme Corp (auto-detected if blank)">
+        </div>
+        <div class="form-group">
+          <label class="form-label">Target Resume Length</label>
+          <select class="form-select" id="jdPreferredLength">
+            <option value="AUTO" selected>Auto (Balanced 1-2 Pages)</option>
+            <option value="ONE_PAGE">One-Page Target</option>
+            <option value="TWO_PAGES">Two-Page Target</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Tailoring Engine</label>
+          <select class="form-select" id="engineSelect">
+            <option value="RULE_BASED" selected>Deterministic Java Engine (Fast, 100% Offline)</option>
+            <option value="OLLAMA_AI" id="useAiOption" disabled>Local Ollama AI (Optional LLM)</option>
+          </select>
+        </div>
+      </div>
+
+      <div style="display: flex; justify-content: flex-end; margin-top: 1rem;">
+        <button class="btn btn-primary" id="btnGenerateTailored" style="font-size: 1.05rem; padding: 0.85rem 1.75rem;">
+          🚀 Generate Tailored Resume &amp; ATS Match Report
+        </button>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         STEP 4: REVIEW TAILORED RESUME (BEFORE & AFTER)
+         ====================================================================== -->
+    <section id="sectionStep4" class="card" style="display: none;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">Review Tailored Resume Before Downloading</h2>
+          <p class="card-subtitle">Compare your original verified resume with the tailored version. Edit any tailored text directly before generating files.</p>
+        </div>
+        <div style="display:flex; gap:0.5rem;">
+          <span class="badge badge-verified" id="tailoredEngineBadge">Engine: RULE_BASED</span>
+          <button class="btn btn-success" onclick="saveTailoredEdits()">✔ Proceed to ATS Match &amp; Download</button>
+        </div>
+      </div>
+
+      <div class="comparison-grid">
+        <!-- Original Master Resume Preview -->
+        <div class="resume-paper">
+          <div style="font-size:0.75rem; text-transform:uppercase; color:#64748b; font-weight:700; margin-bottom:0.5rem; text-align:center;">Verified Master Resume (Ground Truth)</div>
+          <div class="resume-heading" id="origMasterName">Candidate Name</div>
+          <div class="resume-headline" id="origMasterHeadline"></div>
+          <div class="resume-contact" id="origMasterContact">Original Contact Details</div>
+
+          <div class="resume-section-title">Professional Summary</div>
+          <p style="font-size:0.85rem; color:#334155; line-height:1.45;" id="origMasterSummary">Original summary...</p>
+
+          <div class="resume-section-title">Work Experience</div>
+          <div id="origMasterBullets"></div>
+
+          <div class="resume-section-title">Projects</div>
+          <div id="origMasterProjects"></div>
+
+          <div class="resume-section-title">Technical Skills</div>
+          <div id="origMasterSkills" style="font-size:0.85rem; color:#334155;"></div>
+
+          <div class="resume-section-title">Education</div>
+          <div id="origMasterEducation"></div>
+
+          <div class="resume-section-title">Achievements</div>
+          <div id="origMasterAchievements"></div>
+
+          <div class="resume-section-title">Additional Activities &amp; Leadership</div>
+          <div id="origMasterActivities"></div>
+
+          <div class="resume-section-title">Soft Skills</div>
+          <div id="origMasterSoftSkills" style="font-size:0.85rem; color:#475569;"></div>
+        </div>
+
+        <!-- Tailored Resume Preview (Editable) -->
+        <div class="resume-paper" style="border-color: #93c5fd; background: #ffffff;">
+          <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:0.5rem;">
+            <span style="font-size:0.75rem; text-transform:uppercase; color:#2563eb; font-weight:700;">Targeted ATS Resume (Editable)</span>
+            <span class="badge badge-verified">Zero Hallucinations</span>
+          </div>
+
+          <div class="resume-heading" id="tailoredName">Candidate Name</div>
+          <div class="resume-headline" id="tailoredTargetHeader">Target Role</div>
+          <div class="resume-contact" id="tailoredContact"></div>
+
+          <div class="resume-section-title">Professional Summary</div>
+          <textarea class="form-textarea" id="tailoredSummaryInput" rows="3" style="min-height:85px; font-size:0.85rem; margin-bottom:0.5rem;"></textarea>
+
+          <div class="resume-section-title">Work Experience (Action-Verb Enhanced &amp; Ranked)</div>
+          <div id="tailoredBullets"></div>
+
+          <div class="resume-section-title">Projects</div>
+          <div id="tailoredProjectsContainer"></div>
+
+          <div class="resume-section-title">Technical Skills (Prioritized by JD Relevance)</div>
+          <div id="tailoredSkillsContainer"></div>
+
+          <div class="resume-section-title">Education</div>
+          <div id="tailoredEducationContainer"></div>
+
+          <div class="resume-section-title">Achievements</div>
+          <div id="tailoredAchievementsContainer"></div>
+
+          <div class="resume-section-title">Additional Activities &amp; Leadership</div>
+          <div id="tailoredActivitiesContainer"></div>
+
+          <div class="resume-section-title">Soft Skills</div>
+          <div id="tailoredSoftSkillsContainer" style="font-size:0.85rem; color:#334155;"></div>
+        </div>
+      </div>
+    </section>
+
+    <!-- ======================================================================
+         STEP 5: ATS MATCH REPORT & DOWNLOAD
+         ====================================================================== -->
+    <section id="sectionStep5" class="card" style="display: none;">
+      <div class="card-header">
+        <div>
+          <h2 class="card-title">ATS Match Intelligence &amp; Final Download</h2>
+          <p class="card-subtitle">Transparent keyword coverage breakdown, verified evidence, skill gaps, and downloadable files.</p>
+        </div>
+        <div style="display:flex; gap:0.75rem;">
+          <button class="btn btn-primary" onclick="downloadPdf()">📥 Download ATS PDF</button>
+          <button class="btn btn-secondary" onclick="downloadDocx()">📥 Download ATS DOCX</button>
+        </div>
+      </div>
+
+      <!-- Top Score Overview Gauge -->
+      <div class="score-overview-card">
+        <div class="score-circle-wrapper">
+          <div style="text-align:center;">
+            <div class="score-number" id="overallScoreNumber">0</div>
+            <div class="score-percent">ATS Match %</div>
+          </div>
+        </div>
+
+        <div class="score-details">
+          <h3 style="font-size:1.1rem; margin-bottom:0.75rem; color:#f8fafc;">Category Breakdown</h3>
+          <div id="catBarReqSkills" class="category-bar-group"></div>
+          <div id="catBarPrefSkills" class="category-bar-group"></div>
+          <div id="catBarResp" class="category-bar-group"></div>
+          <div id="catBarTools" class="category-bar-group"></div>
+          <div id="catBarEdu" class="category-bar-group"></div>
+        </div>
+      </div>
+
+      <!-- Pre-Download Validation Checklist -->
+      <div class="card" style="background:#f8fafc; border:1px solid #cbd5e1; margin-bottom:1.5rem;">
+        <h4 style="font-size:0.95rem; font-weight:700; color:#1e293b; margin-bottom:0.75rem;">
+          Pre-Download Quality &amp; Truthfulness Verification
+        </h4>
+        <div id="validationChecksContainer"></div>
+      </div>
+
+      <!-- Requirement Match Table -->
+      <div class="card" style="padding:0; overflow:hidden;">
+        <div style="padding:1rem 1.25rem; background:#f1f5f9; display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:0.5rem;">
+          <h4 style="font-size:0.95rem; font-weight:700; color:#1e293b;">Requirement Alignment &amp; Gap Report</h4>
+          <div style="display:flex; gap:0.4rem;">
+            <button class="btn btn-secondary btn-sm" onclick="filterMatchTable('ALL')">All Requirements</button>
+            <button class="btn btn-secondary btn-sm" onclick="filterMatchTable('VERIFIED')">Matched</button>
+            <button class="btn btn-secondary btn-sm" onclick="filterMatchTable('PARTIAL')">Partial</button>
+            <button class="btn btn-secondary btn-sm" onclick="filterMatchTable('MISSING')">Missing Gaps</button>
+          </div>
+        </div>
+
+        <table class="match-table">
+          <thead>
+            <tr>
+              <th style="width:28%;">JD Requirement</th>
+              <th style="width:14%;">Status</th>
+              <th style="width:30%;">Evidence in Master Resume</th>
+              <th style="width:28%;">Suggested Action</th>
+            </tr>
+          </thead>
+          <tbody id="matchTableBody"></tbody>
+        </table>
+      </div>
+
+      <!-- Explanation & Disclaimer -->
+      <div style="margin-top:1.5rem; font-size:0.85rem; color:#64748b; background:#f1f5f9; padding:1rem; border-radius:6px;">
+        <p><strong>Score Calculation Method:</strong> <span id="scoreExplanationText"></span></p>
+        <p style="margin-top:0.4rem;"><em>Disclaimer:</em> <span id="scoreDisclaimerText"></span></p>
+      </div>
+
+      <div style="margin-top:2rem; display:flex; justify-content:center; gap:1rem;">
+        <button class="btn btn-primary" onclick="downloadPdf()" style="padding:0.85rem 1.75rem; font-size:1.05rem;">
+          📥 Download ATS-Optimized PDF
+        </button>
+        <button class="btn btn-secondary" onclick="downloadDocx()" style="padding:0.85rem 1.75rem; font-size:1.05rem;">
+          📥 Download ATS-Optimized DOCX
+        </button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Global Loading Spinner Overlay -->
+  <div class="loading-overlay" id="loadingOverlay">
+    <div class="spinner"></div>
+    <div id="loadingMessage" style="font-weight:600; font-size:1.1rem;">Processing...</div>
+  </div>
+
+  <script th:src="@{/js/app.js}"></script>
+</body>
+</html>
